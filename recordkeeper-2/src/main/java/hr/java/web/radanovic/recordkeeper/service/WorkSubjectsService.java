@@ -34,28 +34,32 @@ public class WorkSubjectsService {
 
 	@Transactional
 	public void startSubject(StartSubjectRequest subjectDto) {
-		AppUser user = authService.getCurrentUser();
-		if(!hoursRepo.checkIfOpenHours(user)) {
-			WorkHours hours = new WorkHours(LocalDateTime.now(), authService.getCurrentUser());
-			hoursRepo.save(hours);
+		if (!checkSubject()) {
+			AppUser user = authService.getCurrentUser();
+			if (!hoursRepo.checkIfOpenHours(user)) {
+				WorkHours hours = new WorkHours(LocalDateTime.now(), authService.getCurrentUser());
+				hoursRepo.save(hours);
+			}
+			WorkSubjects subject = new WorkSubjects();
+			subject.setStart(LocalDateTime.now());
+			subject.setTitle(subjectDto.getTitle());
+			if (subjectDto.getDesc() != null) {
+				subject.setDesc(subjectDto.getDesc());
+			} else {
+				subject.setDesc("No description");
+			}
+			subject.setUser(user);
+			subjectRepo.save(subject);
 		}
-		WorkSubjects subject = new WorkSubjects();
-		subject.setStart(LocalDateTime.now());
-		subject.setTitle(subjectDto.getTitle());
-		if (subjectDto.getDesc() != null) {
-			subject.setDesc(subjectDto.getDesc());
-		} else {
-			subject.setDesc("No description");
-		}
-		subject.setUser(user);
-		subjectRepo.save(subject);
 	}
 
 	@Transactional
 	public void endSubject() {
-		WorkSubjects subject = subjectRepo.findByOpenSubject(authService.getCurrentUser()).get();
-		subject.setEnd(LocalDateTime.now());
-		subjectRepo.save(subject);
+		if (checkSubject()) {
+			WorkSubjects subject = subjectRepo.findByOpenSubject(authService.getCurrentUser()).get();
+			subject.setEnd(LocalDateTime.now());
+			subjectRepo.save(subject);
+		}
 	}
 
 	public List<WorkSubjectDto> getSubjectsDisplayFilter(FilerHoursRequest subjectsDto) {

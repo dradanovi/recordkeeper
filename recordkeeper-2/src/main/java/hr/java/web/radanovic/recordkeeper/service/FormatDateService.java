@@ -57,7 +57,6 @@ public class FormatDateService {
 
 	private String monthFormat(String raw) {
 		raw = raw.toUpperCase();
-		System.out.println(raw);
 		switch (raw.substring(0, 3)) {
 		case "JAN":
 			return StringUtils.replace(raw, "JAN", "01");

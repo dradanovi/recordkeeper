@@ -1,7 +1,9 @@
 package hr.java.web.radanovic.recordkeeper.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,22 +36,26 @@ public class WorkHoursService {
 
 	@Transactional
 	public void startHours() {
-		WorkHours hours = new WorkHours(LocalDateTime.now(), authService.getCurrentUser());
-		hoursRepo.save(hours);
+		if (!checkHours()) {
+			WorkHours hours = new WorkHours(LocalDateTime.now(), authService.getCurrentUser());
+			hoursRepo.save(hours);
+		}
 	}
 
 	@Transactional
 	public void endHours() {
-		AppUser user = authService.getCurrentUser();
-		if (subjectRepo.checkOpenSubject(user) == true) {
-			WorkSubjects subject = subjectRepo.findByOpenSubject(user).get();
-			subject.setEnd(LocalDateTime.now());
-			subjectRepo.save(subject);
+		if (checkHours()) {
+			AppUser user = authService.getCurrentUser();
+			if (subjectRepo.checkOpenSubject(user) == true) {
+				WorkSubjects subject = subjectRepo.findByOpenSubject(user).get();
+				subject.setEnd(LocalDateTime.now());
+				subjectRepo.save(subject);
+			}
+			WorkHours hours = hoursRepo.findByOpenHours(user)
+					.orElseThrow(() -> new HoursException("Open work hours not found"));
+			hours.setEnd(LocalDateTime.now());
+			hoursRepo.save(hours);
 		}
-		WorkHours hours = hoursRepo.findByOpenHours(user)
-				.orElseThrow(() -> new HoursException("Open work hours not found"));
-		hours.setEnd(LocalDateTime.now());
-		hoursRepo.save(hours);
 	}
 
 	public List<WorkHoursDto> getHoursDisplayFilter(FilerHoursRequest hoursDto) {
@@ -83,6 +89,19 @@ public class WorkHoursService {
 			diff = diff + ChronoUnit.MINUTES.between(start, end);
 		}
 		return String.valueOf(diff);
+	}
+	
+	public List<WorkHoursDto> getHoursDisplayScript(FilerHoursRequest req) {
+		List<Object[]> list = hoursRepo.workHours(dateService.stringToLDT(req.getStart(), true),
+				dateService.stringToLDT(req.getEnd(), false), authService.getCurrentUsername());
+
+		List<WorkHoursDto> response = new ArrayList<>();
+		for (Object[] objects : list) {
+			WorkHoursDto hours = new WorkHoursDto(objects[0].toString().substring(0, 19),
+					objects[1].toString().substring(0, 19), objects[2].toString());
+			response.add(hours);
+		}
+		return response;
 	}
 
 }

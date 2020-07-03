@@ -1,19 +1,23 @@
 package hr.java.web.radanovic.recordkeeper.repository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.ParameterMode;
 import javax.persistence.PersistenceContext;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import hr.java.web.radanovic.recordkeeper.exception.EmptyResultException;
@@ -25,6 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 @Repository
 @Transactional
 public class WorkHoursRepository {
+	
+	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+	//	timestamp YYYY-MM-DD HH24:MI:SS
 
 	@PersistenceContext
 	private EntityManager em;
@@ -105,6 +112,29 @@ public class WorkHoursRepository {
 		} else {
 			return false;
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Object[]> workHours(LocalDateTime start, LocalDateTime end, String username) {
+		List<Object[]> query = em.createStoredProcedureQuery("findHours")
+				.registerStoredProcedureParameter(1, LocalDateTime.class, ParameterMode.IN)
+				.registerStoredProcedureParameter(2, LocalDateTime.class, ParameterMode.IN)
+				.registerStoredProcedureParameter(3, String.class, ParameterMode.IN)
+				.registerStoredProcedureParameter(4, Class.class, ParameterMode.REF_CURSOR)
+				.setParameter(1, start)
+				.setParameter(2, end)
+				.setParameter(3, username)
+				.getResultList();
+		
+		return query;
+
+		
+		
+//		StoredProcedureQuery query = em.createStoredProcedureQuery("testtest").registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN).
+//				registerStoredProcedureParameter(2, Integer.class, ParameterMode.IN).registerStoredProcedureParameter(3, Integer.class, ParameterMode.OUT).
+//				setParameter(1, 5).setParameter(2, 10);
+//		System.out.println(query.execute());
+//		System.out.println("stored procedure " + (Integer)query.getOutputParameterValue(3));
 	}
 
 }

@@ -49,4 +49,8 @@ public class UserRepository {
 		return em.createQuery("from AppUser", AppUser.class).getResultList().stream().map(e -> e.getUsername())
 				.collect(Collectors.toList());
 	}
+	
+	public Optional<AppUser> findById(Long id){
+		return Optional.ofNullable(em.find(AppUser.class, id));
+	}
 }

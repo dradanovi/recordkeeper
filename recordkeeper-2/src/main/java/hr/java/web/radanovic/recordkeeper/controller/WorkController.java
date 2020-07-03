@@ -62,7 +62,19 @@ public class WorkController {
 
 	@PostMapping("/hours/display")
 	public ResponseEntity<List<WorkHoursDto>> displayHours(@RequestBody FilerHoursRequest hoursDto) {
-		return ResponseEntity.status(HttpStatus.OK).body(hoursService.getHoursDisplayFilter(hoursDto));
+		Long start, end, jpa, scr;
+		start = System.nanoTime();
+		hoursService.getHoursDisplayFilter(hoursDto);
+		end = System.nanoTime();
+		jpa = end - start;
+		System.out.println("jpa time -> " +  jpa);
+		start = System.nanoTime();
+		hoursService.getHoursDisplayScript(hoursDto);
+		end = System.nanoTime();
+		scr = end - start;
+		System.out.println("scr time -> " +  scr);
+		System.out.println("ratio -> " + jpa / scr);
+		return ResponseEntity.status(HttpStatus.OK).body(hoursService.getHoursDisplayScript(hoursDto));
 	}
 
 	@PostMapping("/subject/display")

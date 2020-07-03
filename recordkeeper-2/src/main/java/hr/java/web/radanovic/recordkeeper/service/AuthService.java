@@ -99,6 +99,11 @@ public class AuthService {
 		return userRepo.findByUsername(principal.getUsername())
 				.orElseThrow(() -> new UserException("User name not found - " + principal.getUsername()));
 	}
+	
+	public String getCurrentUsername() {
+		User principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return principal.getUsername();
+	}
 
 	private void fetchUserAndEnable(VerificationToken verificationToken) {
 		String username = verificationToken.getUser().getUsername();
