@@ -1,6 +1,7 @@
 package hr.java.web.radanovic.recordkeeper.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,6 +83,20 @@ public class WorkSubjectsService {
 
 	public boolean checkSubject() {
 		return subjectRepo.checkOpenSubject(authService.getCurrentUser());
+	}
+
+	public List<WorkSubjectDto> getSubjectsDisplayScript(FilerHoursRequest req) {
+		List<Object[]> list = hoursRepo.workHours(dateService.stringToLDT(req.getStart(), true),
+				dateService.stringToLDT(req.getEnd(), false), authService.getCurrentUsername());
+
+		List<WorkSubjectDto> response = new ArrayList<>();
+		for (Object[] objects : list) {
+			WorkSubjectDto subjects = new WorkSubjectDto(objects[0].toString().substring(0, 19),
+					objects[1].toString().substring(0, 19), objects[2].toString(), objects[3].toString(),
+					objects[4].toString());
+			response.add(subjects);
+		}
+		return response;
 	}
 
 }

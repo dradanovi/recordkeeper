@@ -88,6 +88,7 @@ public class WorkHoursService {
 
 			diff = diff + ChronoUnit.MINUTES.between(start, end);
 		}
+		System.out.println("diff -> " + diff);
 		return String.valueOf(diff);
 	}
 	

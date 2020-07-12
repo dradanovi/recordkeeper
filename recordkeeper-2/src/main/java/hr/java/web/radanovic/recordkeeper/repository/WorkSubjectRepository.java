@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.ParameterMode;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -95,5 +96,20 @@ public class WorkSubjectRepository {
 		} else {
 			return false;
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Object[]> workHours(LocalDateTime start, LocalDateTime end, String username) {
+		List<Object[]> query = em.createStoredProcedureQuery("findHours")
+				.registerStoredProcedureParameter(1, LocalDateTime.class, ParameterMode.IN)
+				.registerStoredProcedureParameter(2, LocalDateTime.class, ParameterMode.IN)
+				.registerStoredProcedureParameter(3, String.class, ParameterMode.IN)
+				.registerStoredProcedureParameter(4, Class.class, ParameterMode.REF_CURSOR)
+				.setParameter(1, start)
+				.setParameter(2, end)
+				.setParameter(3, username)
+				.getResultList();
+		
+		return query;
 	}
 }

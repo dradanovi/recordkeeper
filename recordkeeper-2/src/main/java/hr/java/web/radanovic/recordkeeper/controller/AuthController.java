@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import hr.java.web.radanovic.recordkeeper.dto.AuthenticationResponse;
 import hr.java.web.radanovic.recordkeeper.dto.LoginRequest;
 import hr.java.web.radanovic.recordkeeper.dto.RefreshTokenRequest;
+import hr.java.web.radanovic.recordkeeper.dto.WeatherResponse;
 import hr.java.web.radanovic.recordkeeper.service.AuthService;
 import hr.java.web.radanovic.recordkeeper.service.RefreshTokenService;
+import hr.java.web.radanovic.recordkeeper.service.WeatherService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +29,13 @@ public class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
-
+    private final WeatherService weatherService;
+    
+    @GetMapping("/test")
+    public ResponseEntity<WeatherResponse> test(){
+    	return new ResponseEntity<WeatherResponse>(weatherService.fetchData(), HttpStatus.OK);
+    }
+    
     @GetMapping("accountVerification/{token}")
     public ResponseEntity<String> verifyAccount(@PathVariable String token) {
     	log.info("accountverification");
